@@ -1,36 +1,52 @@
-// 1. Import ของจำเป็น
-import QRCode from 'react-qr-code'
+// 1. กำหนดหน้าตาข้อมูลไส้ใน (อันนี้เราตกลงกันแล้ว ห้ามแก้ชื่อ)
+export interface UserData {
+  username: string;
+  repo: string;
+  time: string;
+  status: string;
+}
 
-// 2. กำหนดสเปคของข้อมูลที่จะรับเข้ามา 
-interface QRCodeProps {
-  url: string;
-  isLoading: boolean;
-  onManualRefresh: () => void;
+// 2. กำหนดสเปคของ Props
+interface HistoryListProps {
+  history: UserData[]; 
+  onClear: () => void;
 }
 
 // 3. เริ่มเขียน Component
-export const QRCodeView = ({ url, isLoading, onManualRefresh }: QRCodeProps) => {
+export const HistoryListView = ({ history, onClear }: HistoryListProps) => {
+
+  // --- Mock Data (ข้อมูลทิพย์) ---
+  // ถ้าอยากเห็นหน้าตาตอนมีข้อมูล ให้แก้ตรงนี้เป็น true ระหว่างทำ
+  const useMockData = false 
+  
+  if (useMockData) {
+    history = [
+        { username: "TestUser", repo: "TestRepo", time: "12:00", status: "OK" },
+        { username: "DevMan", repo: "ProjectA", time: "12:05", status: "OK" }
+    ]
+  }
 
   return (
-    // --- พื้นที่แก้ Design ตรงนี้ ---
-    <div style={{ padding: '20px', textAlign: 'center', border: '1px solid black' }}>
+    // --- พื้นที่แก้ Design  ---
+    <div style={{ border: '1px solid gray', padding: '10px', height: '400px' }}>
       
-      <h2>สแกน QR Code ตรงนี้</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+         <h3>รายชื่อคนที่สแกนแล้ว ({history.length})</h3>
+         <button onClick={onClear}>ล้างค่า</button>
+      </div>
 
-      {/* ถ้ากำลังโหลด ให้แสดงคำว่า Loading */}
-      {isLoading && <p>กำลังสร้าง QR Code...</p>}
+      <ul>
+        {/* (ห้ามลบ .map) */}
+        {history.map((user, index) => (
+          
+          <li key={index} style={{ marginBottom: '10px', background: '#eee' }}>
+             <strong>{user.username}</strong> <br/>
+             <span>Repo: {user.repo}</span> <br/>
+             <small>{user.time}</small>
+          </li>
 
-      {/* ถ้ามี URL ให้แสดง QR Code */}
-      {!isLoading && url && (
-         <div style={{ background: 'white', padding: '10px' }}>
-            <QRCode value={url} size={200} />
-         </div>
-      )}
-
-      {/* ปุ่มกดเริ่มใหม่ */}
-      <button onClick={onManualRefresh} style={{ marginTop: '20px' }}>
-        ขอ QR ใหม่
-      </button>
+        ))}
+      </ul>
 
     </div>
     // ----------------------------------------

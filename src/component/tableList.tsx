@@ -1,90 +1,43 @@
-import { useState, useRef } from 'react'
 import QRCode from 'react-qr-code'
-import { initializeReclaimSession } from '../service/reclaimService'
 
-interface Props {
-  onProofReceived: (proof: any) => void;
+interface QRCodeProps {
+  url: string;           // ลิงก์ QR ที่คุณจะส่งมาให้
+  isLoading: boolean;    // สถานะว่ากำลังโหลดไหม
+  onManualRefresh: () => void; // ปุ่มกดรีเฟรชเอง
 }
 
-const QRCodeCard = ({ onProofReceived }: Props) => {
-  const [requestUrl, setRequestUrl] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const isGeneratingRef = useRef(false)
-
-  const generateNewSession = async () => {
-    if (isGeneratingRef.current) return
-    isGeneratingRef.current = true
-    setIsLoading(true)
-    setRequestUrl('') // เคลียร์ QR เก่า
-
-    try {
-      const url = await initializeReclaimSession(
-        (proofs) => {
-          // 1. สแกนสำเร็จ -> ส่งข้อมูลกลับไปที่ App.tsx
-          if (proofs) {
-            const data = Array.isArray(proofs) ? proofs[0] : proofs
-            onProofReceived(data)
-          }
-
-          // 2. หน่วงเวลา 1.5 วิ แล้วสร้าง QR ใหม่ทันที (Loop)
-          setTimeout(() => {
-            isGeneratingRef.current = false // ปลดล็อคให้สร้างใหม่ได้
-            generateNewSession()
-          }, 1500)
-        },
-        (error) => {
-          console.error('Verification Failed:', error)
-          isGeneratingRef.current = false
-          setIsLoading(false)
-        }
-      )
-
-      setRequestUrl(url)
-    } catch (error) {
-      console.error("Error calling service:", error)
-      isGeneratingRef.current = false
-    } finally {
-      setIsLoading(false)
-    }
-  }
+export const QRCodeView = ({ url, isLoading, onManualRefresh }: QRCodeProps) => {
 
   return (
     <div style={{ 
-        flex: 1, 
-        minWidth: '300px',
-        border: '2px dashed #ccc', 
-        borderRadius: '16px', 
-        padding: '40px', 
-        background: '#fafafa',
-        minHeight: '400px',
-        display: 'flex', 
-        flexDirection: 'column', 
-        justifyContent: 'center', 
-        alignItems: 'center',
-        textAlign: 'center'
+      border: '2px dashed #007bff', 
+      borderRadius: '15px', 
+      padding: '40px', 
+      textAlign: 'center', 
+      background: '#f8faff',
+      minHeight: '350px',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'center',
+      alignItems: 'center'
     }}>
-        {!requestUrl && !isLoading && (
-            <button 
-                onClick={generateNewSession} 
-                style={{ padding: '15px 30px', fontSize: '18px', background: '#007bff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
-            >
-                🚀 Start Kiosk Mode
-            </button>
-        )}
+      <h3 style={{ color: '#007bff', marginBottom: '20px' }}>🔐 Scan to Verify</h3>
 
-        {isLoading && !requestUrl && <p>กำลังสร้าง QR Code ใหม่...</p>}
+      {isLoading ? (
+        <div style={{ color: '#999' }}>⏳ กำลังสร้าง QR Code...</div>
+      ) : url ? (
+        <div className="qr-box" style={{ background: 'white', padding: '15px', borderRadius: '10px', boxShadow: '0 5px 15px rgba(0,0,0,0.1)' }}>
+          <QRCode value={url} size={180} />
+        </div>
+      ) : (
+        <button onClick={onManualRefresh} style={{ padding: '10px 20px', cursor: 'pointer', background: '#007bff', color: 'white', border: 'none', borderRadius: '5px' }}>
+          เริ่มระบบ
+        </button>
+      )}
 
-        {requestUrl && (
-            <div className="fade-in">
-                <h3 style={{ marginBottom: '20px', color: '#333' }}>สแกนเพื่อยืนยันตัวตน</h3>
-                <div style={{ background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
-                    <QRCode value={requestUrl} size={200} />
-                </div>
-                <p style={{ marginTop: '20px', color: '#666' }}>ระบบจะรีเฟรชอัตโนมัติเมื่อสแกนเสร็จ</p>
-            </div>
-        )}
+      <p style={{ marginTop: '20px', fontSize: '14px', color: '#666' }}>
+        สแกนผ่าน Reclaim Protocol
+      </p>
     </div>
   )
 }
-
-export default QRCodeCard

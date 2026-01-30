@@ -1,12 +1,10 @@
-import './App.css'
-import TableList from './component/tableList' 
+// Import จากไฟล์ vertifyLogic.tsx (ตามชื่อไฟล์จริงของคุณ)
+import { GitHubVerifierLogic } from './component/vertifyLogic'
 
 function App() {
   return (
     <div>
-      <h1>Reclaim x DWeb Starter</h1>
-      <hr />
-      <TableList />
+      <GitHubVerifierLogic />
     </div>
   )
 }

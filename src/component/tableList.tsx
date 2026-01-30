@@ -1,97 +1,90 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import QRCode from 'react-qr-code'
 import { initializeReclaimSession } from '../service/reclaimService'
 
-export const GitHubVerifier = () => {
+interface Props {
+  onProofReceived: (proof: any) => void;
+}
+
+const QRCodeCard = ({ onProofReceived }: Props) => {
   const [requestUrl, setRequestUrl] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  
-  const [proofData, setProofData] = useState<any>(null) 
+  const isGeneratingRef = useRef(false)
 
-  const onVerifyClick = async () => {
+  const generateNewSession = async () => {
+    if (isGeneratingRef.current) return
+    isGeneratingRef.current = true
     setIsLoading(true)
-    setRequestUrl('')
-    setProofData(null) // เคลียร์ข้อมูลเก่าก่อนเริ่มใหม่
+    setRequestUrl('') // เคลียร์ QR เก่า
 
     try {
       const url = await initializeReclaimSession(
         (proofs) => {
-          console.log('Verification Success:', proofs)
-          
+          // 1. สแกนสำเร็จ -> ส่งข้อมูลกลับไปที่ App.tsx
           if (proofs) {
-            setProofData(proofs[0]) 
+            const data = Array.isArray(proofs) ? proofs[0] : proofs
+            onProofReceived(data)
           }
+
+          // 2. หน่วงเวลา 1.5 วิ แล้วสร้าง QR ใหม่ทันที (Loop)
+          setTimeout(() => {
+            isGeneratingRef.current = false // ปลดล็อคให้สร้างใหม่ได้
+            generateNewSession()
+          }, 1500)
         },
         (error) => {
           console.error('Verification Failed:', error)
-          alert('เกิดข้อผิดพลาดในการยืนยันตัวตน')
+          isGeneratingRef.current = false
+          setIsLoading(false)
         }
       )
 
       setRequestUrl(url)
-
     } catch (error) {
       console.error("Error calling service:", error)
+      isGeneratingRef.current = false
     } finally {
       setIsLoading(false)
     }
   }
 
   return (
-    <div className="verifier-container" style={{ padding: '20px', textAlign: 'center', maxWidth: '600px', margin: '0 auto' }}>
-      
-      <h3>GitHub Owner Verification</h3>
+    <div style={{ 
+        flex: 1, 
+        minWidth: '300px',
+        border: '2px dashed #ccc', 
+        borderRadius: '16px', 
+        padding: '40px', 
+        background: '#fafafa',
+        minHeight: '400px',
+        display: 'flex', 
+        flexDirection: 'column', 
+        justifyContent: 'center', 
+        alignItems: 'center',
+        textAlign: 'center'
+    }}>
+        {!requestUrl && !isLoading && (
+            <button 
+                onClick={generateNewSession} 
+                style={{ padding: '15px 30px', fontSize: '18px', background: '#007bff', color: 'white', border: 'none', borderRadius: '8px', cursor: 'pointer' }}
+            >
+                🚀 Start Kiosk Mode
+            </button>
+        )}
 
-      <button onClick={onVerifyClick} disabled={isLoading} style={{ padding: '10px 20px', cursor: 'pointer' }}>
-        {isLoading ? 'กำลังเชื่อมต่อ...' : 'Verify GitHub Owner'}
-      </button>
+        {isLoading && !requestUrl && <p>กำลังสร้าง QR Code ใหม่...</p>}
 
-      {requestUrl && !proofData && (
-        <div style={{ marginTop: '20px' }}>
-          <div style={{ background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px', border: '1px solid #ddd' }}>
-            <QRCode value={requestUrl} />
-          </div>
-          <p>สแกนด้วย Reclaim App บนมือถือ</p>
-        </div>
-      )}
-
-
-      {proofData && (
-        <div style={{ 
-          marginTop: '30px', 
-          textAlign: 'left', 
-          border: '1px solid #28a745', 
-          borderRadius: '10px', 
-          padding: '20px',
-          background: '#f0fff4'
-        }}>
-          <h2 style={{ color: '#28a745', marginTop: 0 }}>✅ ยืนยันตัวตนสำเร็จ!</h2>
-          
-          {/* ส่วนดึงค่ามาโชว์แบบสวยๆ */}
-          <div style={{ marginBottom: '15px' }}>
-            <strong>Provider:</strong> {proofData.claimData.provider} <br/>
-            <strong>Timestamp:</strong> {new Date(proofData.claimData.timestampS * 1000).toLocaleString()} <br/>
-          </div>
-
-          <hr/>
-
-          {/* ส่วนโชว์ JSON ดิบๆ (สำหรับ Developer / DWeb) */}
-          <p style={{ fontSize: '12px', color: '#666' }}>Raw Data for DWeb:</p>
-          <pre style={{ 
-            background: '#333', 
-            color: '#fff', 
-            padding: '10px', 
-            borderRadius: '5px', 
-            overflowX: 'auto',
-            fontSize: '11px'
-          }}>
-            {JSON.stringify(proofData, null, 2)}
-          </pre>
-        </div>
-      )}
-      
+        {requestUrl && (
+            <div className="fade-in">
+                <h3 style={{ marginBottom: '20px', color: '#333' }}>สแกนเพื่อยืนยันตัวตน</h3>
+                <div style={{ background: 'white', padding: '16px', display: 'inline-block', borderRadius: '8px', boxShadow: '0 4px 10px rgba(0,0,0,0.1)' }}>
+                    <QRCode value={requestUrl} size={200} />
+                </div>
+                <p style={{ marginTop: '20px', color: '#666' }}>ระบบจะรีเฟรชอัตโนมัติเมื่อสแกนเสร็จ</p>
+            </div>
+        )}
     </div>
   )
 }
 
-export default GitHubVerifier
+export default QRCodeCard

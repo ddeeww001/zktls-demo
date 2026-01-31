@@ -1,3 +1,4 @@
+
 // 1. กำหนดหน้าตาข้อมูลไส้ใน (อันนี้เราตกลงกันแล้ว ห้ามแก้ชื่อ)
 export interface UserData {
   username: string;
@@ -28,11 +29,13 @@ export const HistoryListView = ({ history, onClear }: HistoryListProps) => {
 
   return (
     // --- พื้นที่แก้ Design  ---
-    <div style={{ border: '1px solid gray', padding: '10px', height: '400px' }}>
+    <div className='card' style={{ border: '1px solid #09637E', padding: '10px', height: '400px' }}>
       
-      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+      <div className='table-list'style={{ display: 'flex', justifyContent: 'space-between' }}>
          <h3>รายชื่อคนที่สแกนแล้ว ({history.length})</h3>
-         <button onClick={onClear}>ล้างค่า</button>
+         <div className="button">
+         <button  onClick={onClear}>ล้างค่า</button>
+         </div>
       </div>
 
       <ul>

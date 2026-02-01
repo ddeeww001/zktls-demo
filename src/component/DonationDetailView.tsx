@@ -3,16 +3,42 @@ import { type EmergencyRequest } from '../App';
 import { ArrowLeft, MapPin, Clock, AlertCircle, Wallet } from 'lucide-react';
 import styles from '../styles/DonationDetail.module.css';
 
+// 1. เพิ่ม Import สำหรับแผนที่ (Leaflet)
+import { MapContainer as LeafletMap, TileLayer, Marker } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import mapStyles from '../styles/MapContainer.module.css'; // เรียกใช้ Style ของ Pin จากไฟล์ MapContainer
+
 interface DonationDetailViewProps {
   request: EmergencyRequest;
   onBack: () => void;
 }
+
+// 2. ฟังก์ชันสร้าง Icon (Custom Pin)
+const createCustomIcon = () => {
+  return new L.DivIcon({
+    className: '', 
+    html: `
+      <div class="${mapStyles.pin}">
+        <div class="${mapStyles.pinIcon}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+        </div>
+        <div class="${mapStyles.pinPulse}"></div>
+      </div>
+    `,
+    iconSize: [48, 48],
+    iconAnchor: [24, 24], 
+  });
+};
 
 export const DonationDetailView: React.FC<DonationDetailViewProps> = ({ request, onBack }) => {
   const handleConnectWallet = () => {
     console.log('Connect wallet initiated');
     alert('Wallet connection would be initiated here. In production, this would integrate with Web3 wallet providers.');
   };
+
+  // พิกัดของเคสปัจจุบัน
+  const position: [number, number] = [request.location.lat, request.location.lng];
 
   return (
     <div className={styles.detailView}>
@@ -31,12 +57,26 @@ export const DonationDetailView: React.FC<DonationDetailViewProps> = ({ request,
 
       {/* Content Container */}
       <div className={styles.contentContainer}>
-        {/* Map Snippet */}
-        <div className={styles.mapSnippet}>
-          <div className={styles.mapPlaceholder}>
-            <MapPin size={48} color="#E63946" />
-            <span className={styles.mapLabel}>{request.location.address}</span>
-          </div>
+        
+        {/* 3. ส่วนแผนที่ (แก้จากกล่องสีม่วงเดิม เป็นแผนที่จริง) */}
+        <div className={styles.mapSnippet} style={{ background: '#E5E7EB' }}>
+          <LeafletMap 
+            center={position} 
+            zoom={15} 
+            style={{ height: '100%', width: '100%', zIndex: 0 }}
+            zoomControl={false}
+            scrollWheelZoom={false} // ปิดการเลื่อนเมาส์เพื่อซูม (กัน user รำคาญเวลาเลื่อนหน้าจอ)
+            dragging={true}
+          >
+            <TileLayer
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            />
+            <Marker 
+              position={position} 
+              icon={createCustomIcon()}
+            />
+          </LeafletMap>
         </div>
 
         {/* Request Card */}
@@ -66,8 +106,8 @@ export const DonationDetailView: React.FC<DonationDetailViewProps> = ({ request,
           {/* Urgency Banner */}
           {request.urgencyLevel === 'critical' && (
             <div className={styles.urgencyBanner}>
-              <AlertCircle size={20} color="#FFFFFF" />
-              <span className={styles.urgencyText}>CRITICAL EMERGENCY</span>
+              <AlertCircle size={20} color="#991B1B" />
+              <span className={styles.urgencyText} style={{ color: '#991B1B' }}>CRITICAL EMERGENCY</span>
             </div>
           )}
 

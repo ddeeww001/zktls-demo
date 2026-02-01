@@ -3,7 +3,7 @@ import { MapContainer } from './MapContainer';
 import { RequestCard } from './RequestCard';
 import { FAB } from './FAB';
 import { SOSModal } from './SOSModal';
-import { EmergencyRequest } from '../App';
+import { type EmergencyRequest } from '../App';
 import styles from '../styles/Dashboard.module.css';
 
 interface DashboardViewProps {

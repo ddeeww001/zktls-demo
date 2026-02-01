@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmergencyRequest } from '../App';
+import { type EmergencyRequest } from '../App';
 import styles from '../styles/MapContainer.module.css';
 import { AlertCircle } from 'lucide-react';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmergencyRequest } from '../App';
+import {type  EmergencyRequest } from '../App';
 import { MapPin, Clock } from 'lucide-react';
 import styles from '../styles/RequestCard.module.css';
 

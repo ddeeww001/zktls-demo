@@ -1,5 +1,5 @@
 import React from 'react';
-import { EmergencyRequest } from '../App';
+import { type EmergencyRequest } from '../App';
 import { ArrowLeft, MapPin, Clock, AlertCircle, Wallet } from 'lucide-react';
 import styles from '../styles/DonationDetail.module.css';
 

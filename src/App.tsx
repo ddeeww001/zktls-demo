@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { DashboardView } from './components/DashboardView';
-import { DonationDetailView } from './components/DonationDetailView';
+import { DashboardView } from './component/DashboardView';
+import { DonationDetailView } from './component/DonationDetailView'
 import styles from './styles/App.module.css';
 
 export interface EmergencyRequest {

@@ -1,6 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
 import { initializeReclaimSession } from '../service/reclaimService'
-// เรียกไฟล์ Component ของเพื่อน (Import ให้ตรงกับชื่อไฟล์จริง)
 import { QRCodeView } from './card'
 import { HistoryListView , type UserData } from './tableList'
 
@@ -10,7 +9,6 @@ export const GitHubVerifierLogic = () => {
   const [history, setHistory] = useState<UserData[]>([]) 
   const isGeneratingRef = useRef(false)
 
-  // ฟังก์ชันเริ่มระบบ
   const startSession = async () => {
     if (isGeneratingRef.current) return
     isGeneratingRef.current = true
